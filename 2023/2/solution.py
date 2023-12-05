@@ -13,12 +13,40 @@ def main(index: int, debug: bool):
         from rich.traceback import install
         install(show_locals=True)
 
-    answer = None
+    answer = 0
 
     if index == 1:
         print(">>> Solving for part 1")
         #implement part one here
-        pass
+        maxcubes = {
+            'red': 12,
+            'green': 13,
+            'blue': 14
+        }
+        with open('input.txt', 'r') as f:
+            for line in f:
+                game, data = line.strip().split(': ')
+                gameId = game.split()[1]
+                draws = data.split('; ')
+                if debug: print(gameId, draws)
+                gamePossible = True
+                for draw in draws:
+                    for item in draw.split(', '):
+                        if debug: print(item)
+                        count, color = item.split()
+                        if int(count) > maxcubes[color]:
+                            gamePossible = False
+                
+                if gamePossible:
+                    answer += int(gameId)
+                else:
+                    if debug: print(f">>> {gameId} not possible!")
+                    if debug: print(f">>> {line.strip()}")
+
+
+
+
+
 
     elif index == 2:
         print(">>> Solving for part 2")
