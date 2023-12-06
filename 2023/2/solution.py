@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import rich_click as click
-
 from rich import print
 
 
@@ -13,17 +12,17 @@ def main(index: int, debug: bool):
         from rich.traceback import install
         install(show_locals=True)
 
+    inputfile = 'input.txt'
     answer = 0
 
     if index == 1:
         print(">>> Solving for part 1")
-        #implement part one here
         maxcubes = {
             'red': 12,
             'green': 13,
             'blue': 14
         }
-        with open('input.txt', 'r') as f:
+        with open(inputfile, 'r') as f:
             for line in f:
                 game, data = line.strip().split(': ')
                 gameId = game.split()[1]
@@ -36,22 +35,18 @@ def main(index: int, debug: bool):
                         count, color = item.split()
                         if int(count) > maxcubes[color]:
                             gamePossible = False
-                
+
                 if gamePossible:
                     answer += int(gameId)
                 else:
                     if debug: print(f">>> {gameId} not possible!")
                     if debug: print(f">>> {line.strip()}")
 
-
-
-
-
-
     elif index == 2:
         print(">>> Solving for part 2")
-        #implement part two here
-        pass
+        with open(inputfile, 'r') as f:
+            for line in [x.strip() for x in f]:
+                print(line)
 
     else:
         print("Invalid index; valid values are 1|2.")
