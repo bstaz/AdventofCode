@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os, sys
 import re
 
 import rich_click as click
@@ -15,7 +16,7 @@ def main(index: int, debug: bool):
 
         install(show_locals=True)
 
-    inputfile = "input.txt"
+    inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/input.txt"
     total = 0
 
     if index == 1:

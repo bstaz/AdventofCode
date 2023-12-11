@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os, sys
+
 import rich_click as click
 from rich import print
 
@@ -10,10 +12,9 @@ def main(index: int, debug: bool):
     if debug:
         print("Debugging enabled; setting up Rich traceback handler...")
         from rich.traceback import install
-
         install(show_locals=True)
 
-    inputfile = "input.txt"
+    inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/input.txt"
     answer = 0
 
     if index == 1:
