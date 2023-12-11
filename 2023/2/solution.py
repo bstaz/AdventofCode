@@ -18,7 +18,7 @@ def parse_input(inputfile: str):
                 tempdict = {}
                 for item in draw.split(", "):
                     count, color = item.split()
-                    tempdict[color] = count
+                    tempdict[color] = int(count)
                 games[gameId][drawcounter] = tempdict
                 drawcounter += 1
 
@@ -49,7 +49,7 @@ def main(index: int, debug: bool):
                 for color, count in drawdata.items():
                     if debug:
                         print(color, count)
-                    if int(count) > maxcubes[color]:
+                    if count > maxcubes[color]:
                         gamePossible = False
 
             if gamePossible:
@@ -61,9 +61,14 @@ def main(index: int, debug: bool):
 
     elif index == 2:
         print(">>> Solving for part 2")
-        with open(inputfile, "r") as f:
-            for line in [x.strip() for x in f]:
-                print(line)
+        for gameid, draws in gamedata.items():
+            maxColors = {'red': 0, 'blue': 0, 'green': 0}
+            for draw, drawdata in draws.items():
+                for color, count in drawdata.items():
+                    if maxColors[color] < count:
+                        maxColors[color] = count
+
+            answer += (maxColors['red'] * maxColors["blue"] * maxColors["green"])
 
     else:
         print("Invalid index; valid values are 1|2.")
