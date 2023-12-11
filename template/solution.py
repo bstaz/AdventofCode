@@ -1,6 +1,13 @@
 #!/usr/bin/env python
+import os, sys
+
 import rich_click as click
 from rich import print
+
+
+def parse_input(inputfile: str):
+    with open(inputfile, "r") as f:
+        raise NotImplementedError
 
 
 @click.command(help="Run the solution for a part: 1|2")
@@ -10,20 +17,21 @@ def main(index: int, debug: bool):
     if debug:
         print("Debugging enabled; setting up Rich traceback handler...")
         from rich.traceback import install
-
         install(show_locals=True)
 
-    answer = None
+    inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/input.txt"
+    gamedata = parse_input(inputfile)
+    answer = 0
 
     if index == 1:
         print(">>> Solving for part 1")
         # implement part one here
-        pass
+        raise NotImplementedError
 
     elif index == 2:
         print(">>> Solving for part 2")
         # implement part two here
-        pass
+        raise NotImplementedError
 
     else:
         print("Invalid index; valid values are 1|2.")
