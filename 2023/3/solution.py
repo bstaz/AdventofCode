@@ -2,6 +2,7 @@
 import os, sys
 import logging
 from typing import List, Dict, Tuple
+import re
 
 import rich_click as click
 from rich import print
@@ -35,21 +36,26 @@ def parse_input(inputfile: str) -> Tuple[List[Dict], Dict[int, Dict], List[List]
     """
 
     digits = [str(x) for x in range(0, 10)]
-    symbols = ["#", "$", "*", "+"]
     foundnumbers = []
     foundsymbols = {}
 
     with open(inputfile, "r") as f:
         data = []
         y = 0
+        pattern = r"([0-9]+)"
+        matchcount = 0
+        matchednumbers = []
         for line in f:
+            matches = re.findall(pattern, line)
+            matchcount += len(matches)
+            for match in matches:
+                matchednumbers.append(int(match))
             data.append([])
             x = 0
             begin = None
             in_word = False
             numberstr = ""
-            stripped = line.strip()
-            for char in stripped:
+            for char in line:
                 data[y].append(char)
                 if not in_word and char in digits:
                     # Beginning of a number
@@ -81,6 +87,17 @@ def parse_input(inputfile: str) -> Tuple[List[Dict], Dict[int, Dict], List[List]
                 x += 1
             y += 1
 
+    if matchcount != len(foundnumbers):
+        logger.error(
+            f"matchcount ({matchcount}) is different from foundnumbers ({len(foundnumbers)})"
+        )
+        counter = 0
+        for match in matchednumbers:
+            if match != foundnumbers[counter]["value"]:
+                logger.error(f"{match} != {foundnumbers[counter]['value']}")
+                exit(1)
+            counter += 1
+
     return (foundnumbers, foundsymbols, data)
 
 
@@ -107,21 +124,20 @@ def get_box(number: Dict, bounds: Tuple) -> List[Tuple[int, int]]:
     if start_y == bounds_y:
         range_end_y = start_y
     check_y = range(range_start_y, range_end_y + 1)
-    logger.debug(f"{start_x}, {end_x}, {check_x}")
-    logger.debug(f"{start_y}, {check_y}")
+    # logger.debug(f"{start_x}, {end_x}, {check_x}")
+    # logger.debug(f"{start_y}, {check_y}")
     box = []
     for x in check_x:
         for y in check_y:
             box.append((x, y))
 
-    logger.debug(box)
+    # logger.debug(box)
 
     return box
 
 
 def check_box_for_symbols(box: List[Tuple[int, int]], symbols: Dict[int, Dict]):
     for x, y in box:
-        logger.debug(f"trying {x},{y}")
         try:
             symbol = symbols[x][y]
             return True
@@ -164,9 +180,14 @@ def main(index: int, debug: bool):
         bounds = (len(data[0]) - 1, len(data) - 1)
         for number in numbers:
             box = get_box(number, bounds)
+            logger.debug("")
+            logger.debug(f">> Checking {number['value']}")
             if check_box_for_symbols(box, symbols):
-                logger.info(f"Found symbol in box for number: {number['value']}")
+                logger.debug(f"Found symbol in box for number: {number['value']}")
+                print_box(box, data)
                 answer += number["value"]
+            else:
+                logger.debug(f"Symbol not found in box for number: {number['value']}")
                 print_box(box, data)
 
     elif index == 2:
