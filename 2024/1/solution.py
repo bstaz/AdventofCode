@@ -67,8 +67,20 @@ def main(index: int, debug: bool):
 
     elif index == 2:
         logger.info(">>> Solving for part 2")
-        # implement part two here
-        raise NotImplementedError("Solution 2 is not yet implemented!")
+        # Get a count of each unique item in the right list
+        gamedata["rights"].sort()
+        counts = {}
+        for value in gamedata["rights"]:
+            if value in counts.keys():
+                counts[value] += 1
+            else:
+                counts[value] = 1
+
+        for value in gamedata["lefts"]:
+            if value in counts.keys():
+                answer += value * counts[value]
+
+        print(f"The answer to Day 1 Part 2 is: {answer}")
 
     else:
         logger.error("Invalid index; valid values are 1|2.")
