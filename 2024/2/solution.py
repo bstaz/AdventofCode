@@ -79,9 +79,72 @@ def __part_1(gamedata):
     print(f"\nPart 1 answer is: {answer}")
 
 
-def __part_2(gamedata):
-    # implement part two here
-    raise NotImplementedError("Solution 2 is not yet implemented!")
+def __print_unsafe(message: str):
+    print(f"\t[bold red]UNSAFE[/bold red]: {message}")
+
+
+def __part_2(gamedata: list[list[int]]):
+    answer = 0
+    for report in gamedata:
+        print(f"{report} ", end="")
+
+        if __part_2_check_report(report):
+            print("\t[bold green]SAFE[/bold green]")
+            answer += 1
+        else:
+            length = len(report)
+            retry_count = 0
+            while retry_count < length:
+                retry = report.copy()
+                popped = retry.pop(retry_count)
+                retry_count += 1
+                print(f"\t{retry} (p:{popped}) ", end="")
+                if __part_2_check_report(retry):
+                    print("\t[bold green]SAFE[/bold green]")
+                    answer += 1
+                    break
+
+    print(f"\nPart 2 answer is: {answer}")
+
+
+def __part_2_check_report(report):
+    asc = None
+    last = None
+    for value in report:
+        if last is None:
+            last = value
+            continue
+        diff = value - last
+
+        # Diff by at least 1
+        if diff == 0:
+            reason = f"No difference ({last},{value})"
+            __print_unsafe(reason)
+            return False
+
+        # Diff by at most 3
+        if abs(diff) > 3:
+            reason = f"Difference greater than 3 ({last} -> {value})"
+            __print_unsafe(reason)
+            return False
+
+        # See which direction we're going
+        if asc is None:
+            asc = diff > 0
+        else:
+            if asc:
+                if diff < 0:
+                    reason = "Direction changed (was asc, now desc)"
+                    __print_unsafe(reason)
+                    return False
+            else:
+                if diff > 0:
+                    reason = "Direction changed (was desc, now asc)"
+                    __print_unsafe(reason)
+                    return False
+        last = value
+
+    return True
 
 
 @click.command(help="Run the solution for a part: 1|2")
