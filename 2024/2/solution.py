@@ -33,48 +33,11 @@ def parse_input(inputfile: str):
 def __part_1(gamedata):
     answer = 0
     for report in gamedata:
-        safe = True
-        reason = None
-        asc = None
-        last = None
-        for value in report:
-            if last is None:
-                last = value
-                continue
-            diff = value - last
+        print(f"{report} ", end="")
 
-            # Diff by at least 1
-            if diff == 0:
-                safe = False
-                reason = f"No difference ({last},{value})"
-                break
-
-            # Diff by at most 3
-            if abs(diff) > 3:
-                safe = False
-                reason = f"Difference greater than 3 ({last} -> {value})"
-                break
-
-            last = value
-            # See which direction we're going
-            if asc is None:
-                asc = diff > 0
-            else:
-                if asc:
-                    if diff < 0:
-                        safe = False
-                        reason = "Direction changed (was asc, now desc)"
-                        break
-                else:
-                    if diff > 0:
-                        safe = False
-                        reason = "Direction changed (was desc, now asc)"
-                        break
-        if safe:
-            print(f"{report} is safe")
+        if __check_report(report):
+            print("\t[bold green]SAFE[/bold green]")
             answer += 1
-        else:
-            print(f"{report} is unsafe: {reason}")
 
     print(f"\nPart 1 answer is: {answer}")
 
@@ -88,7 +51,7 @@ def __part_2(gamedata: list[list[int]]):
     for report in gamedata:
         print(f"{report} ", end="")
 
-        if __part_2_check_report(report):
+        if __check_report(report):
             print("\t[bold green]SAFE[/bold green]")
             answer += 1
         else:
@@ -99,7 +62,7 @@ def __part_2(gamedata: list[list[int]]):
                 popped = retry.pop(retry_count)
                 retry_count += 1
                 print(f"\t{retry} (p:{popped}) ", end="")
-                if __part_2_check_report(retry):
+                if __check_report(retry):
                     print("\t[bold green]SAFE[/bold green]")
                     answer += 1
                     break
@@ -107,7 +70,7 @@ def __part_2(gamedata: list[list[int]]):
     print(f"\nPart 2 answer is: {answer}")
 
 
-def __part_2_check_report(report):
+def __check_report(report):
     asc = None
     last = None
     for value in report:
