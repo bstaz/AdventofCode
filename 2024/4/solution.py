@@ -3,6 +3,8 @@ import os
 import sys
 import logging
 import copy
+from enum import Enum
+
 
 import rich_click as click
 from rich import print
@@ -14,6 +16,29 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger()
+
+
+class Direction(Enum):
+    N = 1
+    NE = 2
+    E = 3
+    SE = 4
+    S = 5
+    SW = 6
+    W = 7
+    NW = 8
+
+
+class Coord(object):
+    x: int
+    y: int
+
+    def __init__(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
+
+    def __repr__(self) -> str:
+        return f"Coord: ({self.x},{self.y})"
 
 
 class SolutionNotImplementedError(NotImplementedError):
@@ -38,70 +63,93 @@ def __parse_input(data):
 
 def __part_1(gamedata) -> int:
     answer = 0
-    logger.debug(gamedata)
+    # logger.debug(gamedata)
 
     for y, line in enumerate(gamedata):
-        logger.debug(f"line: {"".join(line)}")
         for x, letter in enumerate(line):
             if letter == "X":
                 logger.debug(f"X found at {x},{y}")
-                coords = [(x, y)]
-                # __print_highlighted_string(gamedata, [(x, y)])
-                coords_m = __search_for_letter("M", gamedata, [x, y])
+                origin = Coord(x, y)
+                coords_m = __search_for_letter("M", gamedata, origin)
                 if len(coords_m):
-                    for coord_m in coords_m:
-                        coords_a = __search_for_letter("A", gamedata, list(coord_m))
+                    for direction, coord_m in coords_m:
+                        coords_a = __search_for_letter(
+                            "A", gamedata, coord_m, direction
+                        )
+                        highlights = [origin, coord_m]
                         if len(coords_a):
-                            for coord_a in coords_a:
-                                coords_s = __search_for_letter(
-                                    "S", gamedata, list(coord_a)
-                                )
-                                if len(coords_s):
-                                    coords.append(coord_m)
-                                    coords.append(coord_a)
-                                    coords += coords_s
-                    __print_highlighted_string(gamedata, set(coords))
+                            coords_s = __search_for_letter(
+                                "S", gamedata, coords_a[0][1], direction
+                            )
+                            highlights.append(coords_a[0][1])
+                            if len(coords_s):
+                                # Found full word
+                                highlights.append(coords_s[0][1])
+                                # __print_highlighted_string(gamedata, highlights)
+                                answer += 1
 
     return answer
 
 
 def __search_for_letter(
-    letter: str, data: list[list[str]], origin: list[int]
-) -> list[tuple[int, int]]:
+    letter: str,
+    data: list[list[str]],
+    origin: Coord,
+    direction: Direction | None = None,
+) -> list[tuple[Direction, Coord]]:
     len_x = len(data[0]) - 1
     len_y = len(data) - 1
     coords = []
-    for xx in range(-1, 2):
-        # Stay in-bounds
-        search_x = origin[0] + xx
-        if search_x < 0 or search_x > len_x:
-            continue
-        for yy in range(-1, 2):
-            # Stay in-bounds
-            search_y = origin[1] + yy
-            # Skip the origin
-            if xx == 00 and yy == 00:
-                continue
-            if search_y < 0 or search_y > len_y:
-                continue
-            logger.debug(f"Searching {search_x},{search_y}")
-            if data[search_x][search_y] == letter:
-                logger.debug(f"Found '{letter}' at {search_x},{search_y}")
-                coords.append((search_x, search_y))
+    if direction is not None:
+        match direction:
+            case Direction.N:
+                offset = Coord(0, -1)
+            case Direction.NE:
+                offset = Coord(1, -1)
+            case Direction.E:
+                offset = Coord(1, 0)
+            case Direction.SE:
+                offset = Coord(1, 1)
+            case Direction.S:
+                offset = Coord(0, 1)
+            case Direction.SW:
+                offset = Coord(-1, 1)
+            case Direction.W:
+                offset = Coord(-1, 0)
+            case Direction.NW:
+                offset = Coord(-1, -1)
+        target = Coord(origin.x - offset.x, origin.y - offset.y)
+        # Make sure we're in-bounds
+        if target.x < 0 or target.y < 0 or target.y > len_y or target.x > len_x:
+            pass
+        elif data[target.y][target.x] == letter:
+            coords.append((direction, target))
+    else:
+        # No direction specified; search all directions
+        for dir in Direction:
+            coords += __search_for_letter(letter, data, origin, dir)
 
     return coords
 
 
-def __print_highlighted_string(data: list[list[str]], coords: set[tuple[int, int]]):
+def __print_highlighted_string(data: list[list[str]], coords: list[Coord]):
     local_data = copy.deepcopy(data)
-    lines_to_print = set()
+    lines_to_print = []
+    single = False
+    if coords[0].y == coords[1].y:
+        single = True
     for coord in coords:
-        line = local_data[coord[0]]
-        line[coord[1]] = f"[bold yellow]{line[coord[1]]}[/bold yellow]"
-        lines_to_print.add(coord[0])
+        line = local_data[coord.y]
+        line[coord.x] = f"[bold yellow]{line[coord.x]}[/bold yellow]"
+        if single:
+            lines_to_print = [line]
+        else:
+            lines_to_print.append(line)
 
+    sep = ["=" for _ in range(0, len(lines_to_print[0]))]
+    print("".join(sep))
     for line in lines_to_print:
-        print("".join(local_data[line]))
+        print("".join(line))
 
 
 def __part_2(gamedata) -> int:
@@ -122,7 +170,7 @@ def main(index: int, debug: bool):
         install(show_locals=True)
         logger.debug(" ...Done.")
 
-    inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/example.txt"
+    inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/input.txt"
     rawdata = __load_input_from_file(inputfile)
     gamedata = __parse_input(rawdata)
 
