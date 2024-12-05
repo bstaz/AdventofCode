@@ -65,30 +65,36 @@ def __part_1(gamedata) -> int:
     answer = 0
     # logger.debug(gamedata)
 
-    for y, line in enumerate(gamedata):
-        for x, letter in enumerate(line):
-            if letter == "X":
-                logger.debug(f"X found at {x},{y}")
-                origin = Coord(x, y)
-                coords_m = __search_for_letter("M", gamedata, origin)
-                if len(coords_m):
-                    for direction, coord_m in coords_m:
-                        coords_a = __search_for_letter(
-                            "A", gamedata, coord_m, direction
-                        )
-                        highlights = [origin, coord_m]
-                        if len(coords_a):
-                            coords_s = __search_for_letter(
-                                "S", gamedata, coords_a[0][1], direction
-                            )
-                            highlights.append(coords_a[0][1])
-                            if len(coords_s):
-                                # Found full word
-                                highlights.append(coords_s[0][1])
-                                # __print_highlighted_string(gamedata, highlights)
-                                answer += 1
+    origins = __find_all_origins("X", gamedata)
+    for origin in origins:
+        coords_m = __search_for_letter("M", gamedata, origin)
+        if len(coords_m):
+            for direction, coord_m in coords_m:
+                coords_a = __search_for_letter("A", gamedata, coord_m, direction)
+                highlights = [origin, coord_m]
+                if len(coords_a):
+                    coords_s = __search_for_letter(
+                        "S", gamedata, coords_a[0][1], direction
+                    )
+                    highlights.append(coords_a[0][1])
+                    if len(coords_s):
+                        # Found full word
+                        highlights.append(coords_s[0][1])
+                        # __print_highlighted_string(gamedata, highlights)
+                        answer += 1
 
     return answer
+
+
+def __find_all_origins(letter: str, data: list[list[str]]) -> list[Coord]:
+    coords = []
+
+    for y, line in enumerate(data):
+        for x, char in enumerate(line):
+            if char == letter:
+                coords.append(Coord(x, y))
+
+    return coords
 
 
 def __search_for_letter(
