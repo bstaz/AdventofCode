@@ -18,17 +18,6 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 
-class Direction(Enum):
-    N = 1
-    NE = 2
-    E = 3
-    SE = 4
-    S = 5
-    SW = 6
-    W = 7
-    NW = 8
-
-
 class Coord(object):
     x: int
     y: int
@@ -39,6 +28,17 @@ class Coord(object):
 
     def __repr__(self) -> str:
         return f"Coord: ({self.x},{self.y})"
+
+
+class Direction(Enum):
+    N = Coord(0, -1)
+    NE = Coord(1, -1)
+    E = Coord(1, 0)
+    SE = Coord(1, 1)
+    S = Coord(0, 1)
+    SW = Coord(-1, 1)
+    W = Coord(-1, 0)
+    NW = Coord(-1, -1)
 
 
 class SolutionNotImplementedError(NotImplementedError):
@@ -86,6 +86,16 @@ def __part_1(gamedata) -> int:
     return answer
 
 
+def __part_2(gamedata) -> int:
+    answer = 0
+    origins = __find_all_origins("A", gamedata)
+
+    for origin in origins:
+        ...
+
+    return answer
+
+
 def __find_all_origins(letter: str, data: list[list[str]]) -> list[Coord]:
     coords = []
 
@@ -107,24 +117,7 @@ def __search_for_letter(
     len_y = len(data) - 1
     coords = []
     if direction is not None:
-        match direction:
-            case Direction.N:
-                offset = Coord(0, -1)
-            case Direction.NE:
-                offset = Coord(1, -1)
-            case Direction.E:
-                offset = Coord(1, 0)
-            case Direction.SE:
-                offset = Coord(1, 1)
-            case Direction.S:
-                offset = Coord(0, 1)
-            case Direction.SW:
-                offset = Coord(-1, 1)
-            case Direction.W:
-                offset = Coord(-1, 0)
-            case Direction.NW:
-                offset = Coord(-1, -1)
-        target = Coord(origin.x - offset.x, origin.y - offset.y)
+        target = Coord(origin.x + direction.value.x, origin.y + direction.value.y)
         # Make sure we're in-bounds
         if target.x < 0 or target.y < 0 or target.y > len_y or target.x > len_x:
             pass
@@ -156,11 +149,6 @@ def __print_highlighted_string(data: list[list[str]], coords: list[Coord]):
     print("".join(sep))
     for line in lines_to_print:
         print("".join(line))
-
-
-def __part_2(gamedata) -> int:
-    # implement part one here
-    raise NotImplementedError("Solution 2 is not yet implemented!")
 
 
 @click.command(help="Run the solution for a part: 1|2")
