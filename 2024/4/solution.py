@@ -5,7 +5,6 @@ import logging
 import copy
 from enum import Enum
 
-
 import rich_click as click
 from rich import print
 
@@ -63,7 +62,6 @@ def __parse_input(data):
 
 def __part_1(gamedata) -> int:
     answer = 0
-    # logger.debug(gamedata)
 
     origins = __find_all_origins("X", gamedata)
     for origin in origins:
@@ -88,12 +86,37 @@ def __part_1(gamedata) -> int:
 
 def __part_2(gamedata) -> int:
     answer = 0
-    origins = __find_all_origins("A", gamedata)
 
+    origins = __find_all_origins("A", gamedata)
     for origin in origins:
-        ...
+        if __check_for_ltr_mas_at(gamedata, origin) and __check_for_rtl_mas_at(
+            gamedata, origin
+        ):
+            answer += 1
 
     return answer
+
+
+def __check_for_ltr_mas_at(data: list[list[str]], origin: Coord) -> bool:
+    if __search_for_letter("M", data, origin, Direction.NW):
+        if __search_for_letter("S", data, origin, Direction.SE):
+            return True
+    elif __search_for_letter("S", data, origin, Direction.NW):
+        if __search_for_letter("M", data, origin, Direction.SE):
+            return True
+
+    return False
+
+
+def __check_for_rtl_mas_at(data: list[list[str]], origin: Coord) -> bool:
+    if __search_for_letter("M", data, origin, Direction.NE):
+        if __search_for_letter("S", data, origin, Direction.SW):
+            return True
+    elif __search_for_letter("S", data, origin, Direction.NE):
+        if __search_for_letter("M", data, origin, Direction.SW):
+            return True
+
+    return False
 
 
 def __find_all_origins(letter: str, data: list[list[str]]) -> list[Coord]:
