@@ -8,7 +8,7 @@ from rich import print
 
 
 logging.basicConfig(
-    format="%(asctime)s %(levelname)-8s %(message)s",
+    format="%(asctime)s %(levelname)-8s %(filename)s:%(lineno)s in %(funcName)s: %(message)s",
     level=logging.INFO,
     datefmt="%Y-%m-%d %H:%M:%S",
 )
@@ -21,9 +21,13 @@ class SolutionNotImplementedError(NotImplementedError):
         logger.error(args[0])
 
 
-def parse_input(inputfile: str):
+def __load_input_from_file(inputfile: str):
     with open(inputfile, "r") as f:
         raise NotImplementedError("parse_input is not yet implemented!")
+
+
+def __parse_input(data):
+    raise NotImplementedError("parse_input is not yet implemented!")
 
 
 def __part_1(gamedata) -> int:
@@ -50,7 +54,8 @@ def main(index: int, debug: bool):
         logger.debug(" ...Done.")
 
     inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/input.txt"
-    gamedata = parse_input(inputfile)
+    rawdata = __load_input_from_file(inputfile)
+    gamedata = __parse_input(rawdata)
 
     if index == 1:
         logger.info(">>> Solving for part 1")
