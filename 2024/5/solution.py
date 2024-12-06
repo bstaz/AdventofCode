@@ -2,7 +2,6 @@
 import logging
 
 import rich_click as click
-from rich import print
 
 
 logging.basicConfig(
@@ -24,7 +23,7 @@ def __load_input_from_file(inputfile: click.Path):
         return f.readlines()
 
 
-def __parse_input(data: list[str]):
+def __parse_input(data: list[str]) -> tuple[dict[str, list[str]], list[list[str]]]:
     rules = {}
     updates = []
     for line in data:
@@ -42,28 +41,29 @@ def __parse_input(data: list[str]):
     return (rules, updates)
 
 
-def __part_1(gamedata) -> int:
+def __check_update(update: list[str], rules: dict) -> tuple[bool, str, str]:
+    for i, page in enumerate(update):
+        # Skip the first page and pages with no rules
+        if i == 0 or page not in rules.keys():
+            continue
+        logger.debug(f"Page: {page}, Rules: {rules[page]}")
+        for testpage in update[:i]:
+            logger.debug(f"Checking {testpage}")
+            if testpage in rules[page]["before"]:
+                logger.debug(f"Page {page} fails due to {testpage}!")
+
+                return (False, page, testpage)
+
+    return (True, "", "")
+
+
+def __part_1(rules, updates) -> int:
     answer = 0
 
-    rules, updates = gamedata
     for update in updates:
         logger.debug(f"Update: {update}")
 
-        for i, page in enumerate(update):
-            # Skip the first page and pages with no rules
-            if i == 0 or page not in rules.keys():
-                continue
-            logger.debug(f"Page: {page}, Rules: {rules[page]}")
-            for testpage in update[:i]:
-                logger.debug(f"Checking {testpage}")
-                if testpage in rules[page]["before"]:
-                    logger.debug(f"Page {page} fails due to {testpage}!")
-                    break
-            else:
-                continue
-            logger.debug("Update fails!")
-            break
-        else:
+        if __check_update(update, rules)[0]:
             logger.debug("Update succeeds!")
             middle = update[int(len(update) / 2)]
             answer += int(middle)
@@ -71,9 +71,31 @@ def __part_1(gamedata) -> int:
     return answer
 
 
-def __part_2(gamedata) -> int:
-    # implement part one here
-    raise NotImplementedError("Solution 2 is not yet implemented!")
+def __part_2(rules, updates: list[list[str]]) -> int:
+    answer = 0
+
+    for update in updates:
+        logger.debug(f"Update: {update}")
+        check, failed_page, failed_test = __check_update(update, rules)
+        if check:
+            continue
+
+        while not check:
+            # Update fails; fix it
+            a = update.index(failed_page)
+            b = update.index(failed_test)
+            update.insert(a, failed_test)
+            update.pop(a + 1)
+            update.insert(b, failed_page)
+            update.pop(b + 1)
+
+            check, failed_page, failed_test = __check_update(update, rules)
+
+        logger.debug(f"Fixed update: {update}")
+        middle = update[int(len(update) / 2)]
+        answer += int(middle)
+
+    return answer
 
 
 @click.command(help="Run the solution for a part: 1|2")
@@ -93,15 +115,15 @@ def main(index: int, debug: bool, inputfile: click.Path):
         logger.debug(" ...Done.")
 
     rawdata = __load_input_from_file(inputfile)
-    gamedata = __parse_input(rawdata)
+    rules, updates = __parse_input(rawdata)
 
     if index == 1:
         logger.info(">>> Solving for part 1")
-        answer = __part_1(gamedata=gamedata)
+        answer = __part_1(rules, updates)
 
     elif index == 2:
         logger.info(">>> Solving for part 2")
-        answer = __part_2(gamedata=gamedata)
+        answer = __part_2(rules, updates)
 
     else:
         logger.error("Invalid index; valid values are 1|2.")
