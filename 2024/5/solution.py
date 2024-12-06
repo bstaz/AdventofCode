@@ -41,7 +41,7 @@ def __parse_input(data: list[str]) -> tuple[dict[str, list[str]], list[list[str]
     return (rules, updates)
 
 
-def __check_update(update: list[str], rules: dict) -> tuple[bool, str, str]:
+def __check_update(update: list[str], rules: dict) -> bool:
     for i, page in enumerate(update):
         # Skip the first page and pages with no rules
         if i == 0 or page not in rules.keys():
@@ -52,9 +52,9 @@ def __check_update(update: list[str], rules: dict) -> tuple[bool, str, str]:
             if testpage in rules[page]["before"]:
                 logger.debug(f"Page {page} fails due to {testpage}!")
 
-                return (False, page, testpage)
+                return False
 
-    return (True, "", "")
+    return True
 
 
 def __part_1(rules, updates) -> int:
@@ -63,7 +63,7 @@ def __part_1(rules, updates) -> int:
     for update in updates:
         logger.debug(f"Update: {update}")
 
-        if __check_update(update, rules)[0]:
+        if __check_update(update, rules):
             logger.debug("Update succeeds!")
             middle = update[int(len(update) / 2)]
             answer += int(middle)
@@ -74,22 +74,24 @@ def __part_1(rules, updates) -> int:
 def __part_2(rules, updates: list[list[str]]) -> int:
     answer = 0
 
+    from functools import cmp_to_key
+
+    def sorter(a, b):
+        if b in rules[a]["before"]:
+            return 1
+        else:
+            return -1
+
+    sorter_key = cmp_to_key(sorter)
+
+    bad_updates = []
     for update in updates:
         logger.debug(f"Update: {update}")
-        check, failed_page, failed_test = __check_update(update, rules)
-        if check:
-            continue
+        if not __check_update(update, rules):
+            bad_updates.append(update)
 
-        while not check:
-            # Update fails; fix it
-            a = update.index(failed_page)
-            b = update.index(failed_test)
-            update.insert(a, failed_test)
-            update.pop(a + 1)
-            update.insert(b, failed_page)
-            update.pop(b + 1)
-
-            check, failed_page, failed_test = __check_update(update, rules)
+    for update in bad_updates:
+        update.sort(key=sorter_key)
 
         logger.debug(f"Fixed update: {update}")
         middle = update[int(len(update) / 2)]
