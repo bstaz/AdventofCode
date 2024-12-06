@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import os
-import sys
 import logging
 
 import rich_click as click
@@ -21,8 +19,8 @@ class SolutionNotImplementedError(NotImplementedError):
         logger.error(args[0])
 
 
-def __load_input_from_file(inputfile: str):
-    with open(inputfile, "r") as f:
+def __load_input_from_file(inputfile: click.Path):
+    with open(str(inputfile), "r") as f:
         raise NotImplementedError("parse_input is not yet implemented!")
 
 
@@ -42,8 +40,11 @@ def __part_2(gamedata) -> int:
 
 @click.command(help="Run the solution for a part: 1|2")
 @click.argument("index", type=int)
+@click.argument(
+    "inputfile", type=click.Path(exists=True, dir_okay=False, resolve_path=True)
+)
 @click.option("--debug", "-d", is_flag=True, default=False, help="Ouput debugging info")
-def main(index: int, debug: bool):
+def main(index: int, debug: bool, inputfile: click.Path):
     if debug:
         logger.setLevel(logging.DEBUG)
         logger.debug("Debugging enabled")
@@ -53,7 +54,6 @@ def main(index: int, debug: bool):
         install(show_locals=True)
         logger.debug(" ...Done.")
 
-    inputfile = f"{os.path.dirname(os.path.abspath(sys.argv[0]))}/input.txt"
     rawdata = __load_input_from_file(inputfile)
     gamedata = __parse_input(rawdata)
 
