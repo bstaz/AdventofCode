@@ -21,7 +21,7 @@ class SolutionNotImplementedError(NotImplementedError):
 
 def __load_input_from_file(inputfile: click.Path):
     with open(str(inputfile), "r") as f:
-        raise NotImplementedError("parse_input is not yet implemented!")
+        raise NotImplementedError("load_input_from_file is not yet implemented!")
 
 
 def __parse_input(data):
