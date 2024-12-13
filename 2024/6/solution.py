@@ -3,6 +3,7 @@ import logging
 from enum import Enum
 import copy
 import time
+from multiprocessing import Pool
 
 import rich_click as click
 from rich import print
@@ -185,13 +186,19 @@ def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> 
 
 def __part_2(map: list[list[str]], start: Coord) -> int:
     answer = 0
+    pool = Pool(7)
+    tasks = []
 
     for y, line in enumerate(map):
         for x, char in enumerate(line):
             if char != "#" and Coord(x, y) != start:
-                if __check_for_loop(map=map, start=start, obstruction=Coord(x, y)):
-                    print(f"Found loop at {x},{y}")
-                    answer += 1
+                tasks.append([map, start, Coord(x, y)])
+
+    for result in pool.starmap(__check_for_loop, tasks):
+        if result:
+            answer += 1
+
+    pool.close()
 
     return answer
 
