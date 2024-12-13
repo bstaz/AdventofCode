@@ -66,14 +66,11 @@ def __parse_input(data) -> tuple[list[list[str]], Coord]:
     return (ret, start)
 
 
-def __part_1(map: list[list[str]], start: Coord) -> int:
+def __part_1(map: list[list[str]], start: Coord) -> set[tuple[int, int]]:
     current: Coord = start
     direction: Direction = Direction.North
-    answer = 0
     visited = set()
-    visited.add(str(current))
-    # visited_map = map.copy()
-    # visited_map[current.y][current.x] = "S"
+    visited.add((current.x, current.y))
     out_of_bounds = False
 
     while not out_of_bounds:
@@ -84,17 +81,7 @@ def __part_1(map: list[list[str]], start: Coord) -> int:
             contents = map[move.y][move.x]
             if contents != "#":
                 current = move
-                # match direction:
-                #     case Direction.North:
-                #         visited_map[current.y][current.x] = "^"
-                #     case Direction.East:
-                #         visited_map[current.y][current.x] = ">"
-                #     case Direction.South:
-                #         visited_map[current.y][current.x] = "v"
-                #     case Direction.West:
-                #         visited_map[current.y][current.x] = "<"
-                visited.add(str(current))
-                answer = len(visited)
+                visited.add((current.x, current.y))
             else:
                 match direction:
                     case Direction.North:
@@ -108,14 +95,7 @@ def __part_1(map: list[list[str]], start: Coord) -> int:
         except IndexError:
             out_of_bounds = True
 
-    answer = len(visited)
-
-    # for line in visited_map:
-    #     for char in line:
-    #         print(char, end="")
-    #     print("")
-
-    return answer
+    return visited
 
 
 def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> bool:
@@ -132,7 +112,6 @@ def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> 
     new_space_counter = 0
     new_spaces_since_last_turn = 0
 
-    # print(f"Testing {obstruction}")
     if obstruction.x == 3 and obstruction.y == 6:
         pass
 
@@ -176,23 +155,17 @@ def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> 
         except IndexError:
             out_of_bounds = True
 
-    # for line in visited_map:
-    #     for char in line:
-    #         print(char, end="")
-    #     print("")
-
     return False
 
 
-def __part_2(map: list[list[str]], start: Coord) -> int:
+def __part_2(map: list[list[str]], start: Coord, visited: set[tuple[int, int]]) -> int:
     answer = 0
     pool = Pool(7)
     tasks = []
 
-    for y, line in enumerate(map):
-        for x, char in enumerate(line):
-            if char != "#" and Coord(x, y) != start:
-                tasks.append([map, start, Coord(x, y)])
+    for space in visited:
+        if space != (start.x, start.y):
+            tasks.append([map, start, Coord(space[0], space[1])])
 
     for result in pool.starmap(__check_for_loop, tasks):
         if result:
@@ -225,11 +198,13 @@ def main(index: int, debug: bool, inputfile: click.Path):
     begin = time.time_ns()
     if index == 1:
         logger.info(">>> Solving for part 1")
-        answer = __part_1(map, start)
+        visited = __part_1(map, start)
+        answer = len(visited)
 
     elif index == 2:
         logger.info(">>> Solving for part 2")
-        answer = __part_2(map, start)
+        visited = __part_1(map, start)
+        answer = __part_2(map, start, visited)
 
     else:
         logger.error("Invalid index; valid values are 1|2.")
