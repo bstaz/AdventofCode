@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import logging
 from enum import Enum
+import copy
+import time
 
 import rich_click as click
 from rich import print
@@ -69,8 +71,8 @@ def __part_1(map: list[list[str]], start: Coord) -> int:
     answer = 0
     visited = set()
     visited.add(str(current))
-    visited_map = map.copy()
-    visited_map[current.y][current.x] = "S"
+    # visited_map = map.copy()
+    # visited_map[current.y][current.x] = "S"
     out_of_bounds = False
 
     while not out_of_bounds:
@@ -81,15 +83,15 @@ def __part_1(map: list[list[str]], start: Coord) -> int:
             contents = map[move.y][move.x]
             if contents != "#":
                 current = move
-                match direction:
-                    case Direction.North:
-                        visited_map[current.y][current.x] = "^"
-                    case Direction.East:
-                        visited_map[current.y][current.x] = ">"
-                    case Direction.South:
-                        visited_map[current.y][current.x] = "v"
-                    case Direction.West:
-                        visited_map[current.y][current.x] = "<"
+                # match direction:
+                #     case Direction.North:
+                #         visited_map[current.y][current.x] = "^"
+                #     case Direction.East:
+                #         visited_map[current.y][current.x] = ">"
+                #     case Direction.South:
+                #         visited_map[current.y][current.x] = "v"
+                #     case Direction.West:
+                #         visited_map[current.y][current.x] = "<"
                 visited.add(str(current))
                 answer = len(visited)
             else:
@@ -107,16 +109,91 @@ def __part_1(map: list[list[str]], start: Coord) -> int:
 
     answer = len(visited)
 
-    for line in visited_map:
-        for char in line:
-            print(char, end="")
-        print("")
+    # for line in visited_map:
+    #     for char in line:
+    #         print(char, end="")
+    #     print("")
+
     return answer
 
 
+def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> bool:
+    current: Coord = start
+    direction: Direction = Direction.North
+    visited = set()
+    visited.add(str(current))
+    test_map = copy.deepcopy(map)
+    test_map[obstruction.y][obstruction.x] = "#"
+    visited_map = copy.deepcopy(map)
+    visited_map[current.y][current.x] = "S"
+    out_of_bounds = False
+    turns_without_new_spaces = 0
+    new_space_counter = 0
+    new_spaces_since_last_turn = 0
+
+    # print(f"Testing {obstruction}")
+    if obstruction.x == 3 and obstruction.y == 6:
+        pass
+
+    while not out_of_bounds:
+        move = current + direction.value
+        try:
+            if move.x < 0 or move.y < 0:
+                raise IndexError
+            contents = test_map[move.y][move.x]
+            if contents != "#":
+                current = move
+                match direction:
+                    case Direction.North:
+                        visited_map[current.y][current.x] = "^"
+                    case Direction.East:
+                        visited_map[current.y][current.x] = ">"
+                    case Direction.South:
+                        visited_map[current.y][current.x] = "v"
+                    case Direction.West:
+                        visited_map[current.y][current.x] = "<"
+                before = len(visited)
+                visited.add(str(current))
+                after = len(visited)
+                new_space_counter += after - before
+            else:
+                new_spaces_since_last_turn = new_space_counter
+                new_space_counter = 0
+                if new_spaces_since_last_turn == 0:
+                    turns_without_new_spaces += 1
+                if turns_without_new_spaces > 4:
+                    return True
+                match direction:
+                    case Direction.North:
+                        direction = Direction.East
+                    case Direction.East:
+                        direction = Direction.South
+                    case Direction.South:
+                        direction = Direction.West
+                    case Direction.West:
+                        direction = Direction.North
+        except IndexError:
+            out_of_bounds = True
+
+    # for line in visited_map:
+    #     for char in line:
+    #         print(char, end="")
+    #     print("")
+
+    return False
+
+
 def __part_2(map: list[list[str]], start: Coord) -> int:
-    # implement part one here
-    raise NotImplementedError("Solution 2 is not yet implemented!")
+    answer = 0
+
+    for y, line in enumerate(map):
+        for x, char in enumerate(line):
+            if char != "#" and Coord(x, y) != start:
+                if __check_for_loop(map=map, start=start, obstruction=Coord(x, y)):
+                    print(f"Found loop at {x},{y}")
+                    answer += 1
+
+    return answer
 
 
 @click.command(help="Run the solution for a part: 1|2")
@@ -138,6 +215,7 @@ def main(index: int, debug: bool, inputfile: click.Path):
     rawdata = __load_input_from_file(inputfile)
     map, start = __parse_input(rawdata)
 
+    begin = time.time_ns()
     if index == 1:
         logger.info(">>> Solving for part 1")
         answer = __part_1(map, start)
@@ -149,6 +227,8 @@ def main(index: int, debug: bool, inputfile: click.Path):
     else:
         logger.error("Invalid index; valid values are 1|2.")
         exit(1)
+    elapsed = time.time_ns() - begin
+    print(elapsed / 1_000_000)
 
     logger.info(f"Answer: {answer}")
 
