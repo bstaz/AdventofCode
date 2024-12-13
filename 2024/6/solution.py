@@ -101,19 +101,11 @@ def __part_1(map: list[list[str]], start: Coord) -> set[tuple[int, int]]:
 def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> bool:
     current: Coord = start
     direction: Direction = Direction.North
-    visited = set()
-    visited.add(str(current))
+    visited_with_dir = set()
+    visited_with_dir.add((current.x, current.y, direction))
     test_map = copy.deepcopy(map)
     test_map[obstruction.y][obstruction.x] = "#"
-    visited_map = copy.deepcopy(map)
-    visited_map[current.y][current.x] = "S"
     out_of_bounds = False
-    turns_without_new_spaces = 0
-    new_space_counter = 0
-    new_spaces_since_last_turn = 0
-
-    if obstruction.x == 3 and obstruction.y == 6:
-        pass
 
     while not out_of_bounds:
         move = current + direction.value
@@ -123,26 +115,12 @@ def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> 
             contents = test_map[move.y][move.x]
             if contents != "#":
                 current = move
-                match direction:
-                    case Direction.North:
-                        visited_map[current.y][current.x] = "^"
-                    case Direction.East:
-                        visited_map[current.y][current.x] = ">"
-                    case Direction.South:
-                        visited_map[current.y][current.x] = "v"
-                    case Direction.West:
-                        visited_map[current.y][current.x] = "<"
-                before = len(visited)
-                visited.add(str(current))
-                after = len(visited)
-                new_space_counter += after - before
-            else:
-                new_spaces_since_last_turn = new_space_counter
-                new_space_counter = 0
-                if new_spaces_since_last_turn == 0:
-                    turns_without_new_spaces += 1
-                if turns_without_new_spaces > 4:
+                t = (current.x, current.y, direction)
+                if t in visited_with_dir:
                     return True
+                else:
+                    visited_with_dir.add(t)
+            else:
                 match direction:
                     case Direction.North:
                         direction = Direction.East
