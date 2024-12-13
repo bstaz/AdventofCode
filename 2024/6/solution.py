@@ -106,32 +106,31 @@ def __check_for_loop(map: list[list[str]], start: Coord, obstruction: Coord) -> 
     test_map = copy.deepcopy(map)
     test_map[obstruction.y][obstruction.x] = "#"
     out_of_bounds = False
+    width = len(map[0]) - 1
+    height = len(map) - 1
 
     while not out_of_bounds:
         move = current + direction.value
-        try:
-            if move.x < 0 or move.y < 0:
-                raise IndexError
-            contents = test_map[move.y][move.x]
-            if contents != "#":
-                current = move
-                t = (current.x, current.y, direction)
-                if t in visited_with_dir:
-                    return True
-                else:
-                    visited_with_dir.add(t)
+        if move.x < 0 or move.y < 0 or move.x > width or move.y > height:
+            break
+        contents = test_map[move.y][move.x]
+        if contents != "#":
+            current = move
+            t = (current.x, current.y, direction)
+            if t in visited_with_dir:
+                return True
             else:
-                match direction:
-                    case Direction.North:
-                        direction = Direction.East
-                    case Direction.East:
-                        direction = Direction.South
-                    case Direction.South:
-                        direction = Direction.West
-                    case Direction.West:
-                        direction = Direction.North
-        except IndexError:
-            out_of_bounds = True
+                visited_with_dir.add(t)
+        else:
+            match direction:
+                case Direction.North:
+                    direction = Direction.East
+                case Direction.East:
+                    direction = Direction.South
+                case Direction.South:
+                    direction = Direction.West
+                case Direction.West:
+                    direction = Direction.North
 
     return False
 
