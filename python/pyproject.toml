@@ -1,6 +1,6 @@
 [project]
-name = ""
-version = ""
+name = "aoc-python-solutions"
+version = "2024.7"
 description = ""
 authors = [
     {name = "Brian Staszewski", email = "bstaz@users.noreply.github.com"},
@@ -13,4 +13,3 @@ requires-python = ">=3.12"
 readme = "README.md"
 license = {text = "None"}
 
-[tool.pdm]
