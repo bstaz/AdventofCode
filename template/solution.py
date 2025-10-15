@@ -34,7 +34,7 @@ def __part_1(gamedata) -> int:
 
 
 def __part_2(gamedata) -> int:
-    # implement part one here
+    # implement part two here
     raise NotImplementedError("Solution 2 is not yet implemented!")
 
 
