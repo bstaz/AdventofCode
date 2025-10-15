@@ -38,7 +38,7 @@ def __parse_input(data) -> list[tuple[int, list[int]]]:
     return ret
 
 
-def __do_math(value: int, a: int, b: list[int]):
+def __do_math(value: int, a: int, b: list[int]) -> bool:
     if len(b) > 1:
         if __do_math(value, a + b[0], b[1:]) or __do_math(value, a * b[0], b[1:]):
             return True
@@ -48,6 +48,32 @@ def __do_math(value: int, a: int, b: list[int]):
         return True
     else:
         return False
+
+
+def __get_concat_permutations(input: list[int]) -> list[list[int]]:
+    ret = []
+    """
+    10 19 -> [1019]
+    81 40 27 -> [8140 27], [81 4027]
+    """
+
+    if len(input) == 2:
+        return [[int(str(input[0]) + str(input[1]))]]
+    else:
+        ret.append()
+
+    return ret
+
+
+def __do_math_with_concat(value: int, operands: list[int]) -> bool:
+    if len(operands) == 2 and value == int(str(operands[0]) + str(operands[1])):
+        return True
+    # Generate permutations of operands[] with each possible set concatenated
+    remaining = len(operands) - 1
+    while remaining > 1:
+        ...
+
+    return False
 
 
 def __part_1(gamedata) -> int:
@@ -61,8 +87,15 @@ def __part_1(gamedata) -> int:
 
 
 def __part_2(gamedata) -> int:
-    # implement part one here
-    raise NotImplementedError("Solution 2 is not yet implemented!")
+    answer = 0
+
+    for value, operands in gamedata:
+        if __do_math(value, operands[0], operands[1:]) or __do_math_with_concat(
+            value, operands
+        ):
+            answer += value
+
+    return answer
 
 
 @click.command(help="Run the solution for a part: 1|2")
