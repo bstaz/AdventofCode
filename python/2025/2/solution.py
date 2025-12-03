@@ -19,7 +19,10 @@ def debug_print(text: str, end: str = "\n"):
 def get_input(path: str):
     data = []
     with open(path, "r") as f:
-        data = f.read().splitlines()
+        lines = f.read().splitlines()
+
+    for group in lines[0].split(","):
+        data.append(tuple(group.split("-")))
 
     return data
 
@@ -29,7 +32,24 @@ def main(input_path: str, expected1: int = 0, expected2: int = 0):
     if DEBUG:
         ...
 
-    test_input = get_input(input_path)
+    input_data = get_input(input_path)
+    sum_matches = 0
+
+    for group in input_data:
+        _start, _end = group
+        start = int(_start)
+        end = int(_end)
+
+        for v in range(start, end + 1):
+            _v = str(v)
+            half = int(len(_v) / 2)
+            first, second = (_v[0:half], _v[half:])
+            if first == second:
+                debug_print(f"Match! {_v=} {first=} {second=}")
+                sum_matches += v
+
+
+    console.print(f"Matches: 1:{sum_matches}")
 
 
 if __name__ == "__main__":
@@ -37,5 +57,5 @@ if __name__ == "__main__":
     print("------------------- input.test.txt ------------------")
     main("input.test.txt")
     print("-------------------- input.1.txt --------------------")
-    main("input.1.txt")
+    main("input.txt")
 
