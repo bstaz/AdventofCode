@@ -34,6 +34,7 @@ def main(input_path: str, expected1: int = 0, expected2: int = 0):
 
     input_data = get_input(input_path)
     sum_matches = 0
+    sum_matches2 = 0
 
     for group in input_data:
         _start, _end = group
@@ -49,7 +50,7 @@ def main(input_path: str, expected1: int = 0, expected2: int = 0):
                 sum_matches += v
 
 
-    console.print(f"Matches: 1:{sum_matches}")
+    console.print(f"Matches: 1:{sum_matches} 2:{sum_matches + sum_matches2}")
 
 
 if __name__ == "__main__":
