@@ -10,7 +10,7 @@ from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, T
 
 rich_install(show_locals=True)
 
-DEBUG = True
+DEBUG = False
 
 
 def debug_print(console: Console, text: str, end: str = "\n"):
@@ -69,13 +69,30 @@ def main(input_path: str, expected1: int = 0, expected2: int = 0):
                 p.console.print(group)
                 for v in ranges:
                     p2.update(t2, advance=1)
-                    #time.sleep(0.0001)
                     _v = str(v)
                     half = int(len(_v) / 2)
                     first, second = (_v[0:half], _v[half:])
                     if first == second:
                         debug_print(console, f"\tMatch1: {_v=} {first=} {second=}")
                         sum_matches += v
+                        continue
+
+                    # loop through first half of number, 1 digit at a time
+                    for x in range(0, half + 1):
+                        # construct a string that repeats the substring until len(_v)
+                        subs =_v[0:x+1]
+                        # break if our starting substring is greater than half(_v)
+                        if len(subs) > half:
+                            break
+                        while len(subs) < len(_v):
+                            subs += _v[0:x+1]
+                        if subs == _v:
+                            sum_matches2 += v
+                            debug_print(console, f"\tMatch2: {_v=}")
+                            break
+
+
+
 
 
     if sum_matches != expected1:
@@ -87,7 +104,7 @@ def main(input_path: str, expected1: int = 0, expected2: int = 0):
 if __name__ == "__main__":
     print("=====================================================")
     print("------------------- input.test.txt ------------------")
-    main("input.test.txt", 1227775554)
+    main("input.test.txt", 1227775554, 4174379265)
     print("-------------------- input.txt --------------------")
-    main("input.txt", 31839939622)
+    main("input.txt", 31839939622, 41662374059)
 
